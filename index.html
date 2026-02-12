@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Valentine Surprise</title>
+
+<style>
+:root{
+  --bg:#0b0b10;
+  --card:#141422;
+  --txt:#f5f5ff;
+  --muted:#b8b8d6;
+  --accent:#ff4d6d;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:radial-gradient(1200px 800px at 20% 10%, #2a0f1a 0%, var(--bg) 55%);
+  color:var(--txt);
+}
+
+.wrap{
+  max-width:980px;
+  margin:0 auto;
+  padding:28px;
+}
+
+.card{
+  background:rgba(20,20,34,.92);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+}
+
+h1{margin:0 0 6px;font-size:26px}
+p{margin:8px 0;color:var(--muted);line-height:1.45}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight:800;
+  color:#ffd6de;
+  background:rgba(255,77,109,.14);
+  border:1px solid rgba(255,77,109,.35);
+  padding:8px 12px;
+  border-radius:999px;
+}
+
+.subtle{font-size:14px}
+
+/* ---------------- GRID ---------------- */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:14px;
+}
+
+.tile{
+  position:relative;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  cursor:pointer;
+  background:#0e0e18;
+}
+
+/* OPTION A — FACE FRIENDLY CROP (bias upward) */
+.tile img{
+  width:100%;
+  height:165px;
+  object-fit:cover;
+  object-position:50% 20%;
+  display:block;
+  filter:saturate(1.05);
+}
+
+.tile.selected::after{
+  content:"✓";
+  position:absolute;
+  inset:10px auto auto 10px;
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.22);
+  font-weight:900;
+  color:#a6ffb5;
+}
+
+.tile.selected{
+  outline:2px solid rgba(255,77,109,.65);
+}
+
+/* ---------------- BUTTONS ---------------- */
+
+.row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:14px;
+}
+
+button{
+  appearance:none;
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.btn{
+  background:var(--accent);
+  color:white;
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.ghost{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.16);
+}
+
+.hidden{display:none}
+
+.pill{
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  color:var(--muted);
+  font-weight:800;
+}
+
+/* ---------------- TOAST ---------------- */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  background:rgba(20,20,34,.95);
+  border:1px solid rgba(255,255,255,.12);
+  padding:10px 12px;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  max-width:560px;
+  display:none;
+  z-index:9999;
+}
+
+.toast.show{display:block}
+
+/* ---------------- SLIDESHOW ---------------- */
+
+.slideshow{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  background:#0e0e18;
+}
+
+/* OPTION B — NO CROP (letterbox) */
+.slide{
+  width:100%;
+  height:460px;
+  object-fit:contain;
+  background:#0e0e18;
+  display:none;
+}
+
+.slide.active{display:block}
+
+.nav{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.25);
+  cursor:pointer;
+}
+
+.dot.active{
+  background:rgba(255,77,109,.95);
+}
+
+.mini{
+  color:var(--muted);
+  font-weight:800;
+  text-align:center;
+  margin-top:10px;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+select{
+  background:rgba(255,255,255,.06);
+  color:var(--txt);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  padding:8px 10px;
+  font-weight:800;
+}
+
+/* ---------------- SPOTIFY FADE-IN ---------------- */
+
+.our-song{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight:900;
+  color:#ffe7ec;
+  background:rgba(255,77,109,.12);
+  border:1px solid rgba(255,77,109,.30);
+  padding:8px 12px;
+  border-radius:12px;
+  margin-top:10px;
+}
+
+.spotify-wrap{
+  opacity:0;
+  transform: translateY(10px);
+  transition: opacity 2s ease, transform 2s ease;
+  margin:12px 0 6px;
+}
+
+.spotify-wrap.show{
+  opacity:1;
+  transform: translateY(0);
+}
+
+/* ---------------- CONFETTI ---------------- */
+
+#confetti{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:9998;
+}
+
+.heart{
+  position:absolute;
+  top:-20px;
+  font-size:18px;
+  opacity:.95;
+  animation:fall linear forwards;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));
+  user-select:none;
+}
+
+@keyframes fall{
+  to{
+    transform:translateY(110vh) rotate(720deg);
+    opacity:0;
+  }
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+
+@media(max-width:820px){
+  .grid{grid-template-columns:repeat(3,1fr)}
+}
+
+@media(max-width:560px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .tile img{height:150px}
+  .slide{height:320px}
+}
+</style>
+</head>
+
+<body>
+
+<div id="confetti" aria-hidden="true"></div>
+
+<div class="wrap">
+
+<!-- GAME -->
+<div class="card" id="gameCard">
+
+  <div class="badge">💝 Valentine Check</div>
+
+  <h1>Pick all of the following with your valentine</h1>
+
+  <p class="subtle">
+    Find me in the photos 😄 (Decoys exist. I regret nothing.)
+  </p>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="row">
+    <div class="pill">💘 <span id="status">0 selected</span></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button class="ghost" id="resetBtn" type="button">Reset</button>
+      <button class="btn" id="continueBtn" type="button" disabled>Continue →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SLIDESHOW -->
+<div class="card hidden" id="slideshowCard">
+
+  <div class="badge">❤️ My Favorite Person</div>
+
+  <h1>I am so happy you picked me to be your valentine, I love you</h1>
+
+  <p class="subtle">A little “aww” and a little “lol” 💕</p>
+
+  <div class="our-song">🎵 Our Song</div>
+  <p class="subtle" style="margin-top:6px">Press play… this one’s for you ❤️</p>
+
+  <div class="spotify-wrap" id="spotifyPlayer">
+    <iframe
+      style="border-radius:12px"
+      src="https://open.spotify.com/embed/track/1ITSr1tMba4sXhQQsm7VkB"
+      width="100%"
+      height="152"
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+    </iframe>
+  </div>
+
+  <div class="slideshow">
+    <img class="slide" id="slide0" alt="slide 1">
+    <img class="slide" id="slide1" alt="slide 2">
+    <img class="slide" id="slide2" alt="slide 3">
+    <img class="slide" id="slide3" alt="slide 4">
+    <img class="slide" id="slide4" alt="slide 5">
+    <img class="slide" id="slide5" alt="slide 6">
+    <img class="slide" id="slide6" alt="slide 7">
+    <img class="slide" id="slide7" alt="slide 8">
+    <img class="slide" id="slide8" alt="slide 9">
+    <img class="slide" id="slide9" alt="slide 10">
+    <img class="slide" id="slide10" alt="slide 11">
+    <img class="slide" id="slide11" alt="slide 12">
+  </div>
+
+  <div class="row">
+    <button class="ghost" id="prevBtn" type="button">← Prev</button>
+    <div class="nav" id="dots" aria-label="slideshow dots"></div>
+    <button class="btn" id="nextBtn" type="button">Next →</button>
+  </div>
+
+  <div class="controls">
+    <button class="ghost" id="playPauseBtn" type="button">Pause</button>
+    <label for="speed" class="mini" style="margin:0">Speed</label>
+    <select id="speed">
+      <option value="2000">Fast</option>
+      <option value="3500" selected>Normal</option>
+      <option value="5000">Slow</option>
+    </select>
+  </div>
+
+  <p class="mini" id="counter"></p>
+
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* -------- FILE NAMES -------- */
+/* Put all images in same folder as index.html and name exactly: */
+
+const tiles = [
+  {src:"me01.jpg", v:true},
+  {src:"me02.jpg", v:true},
+  {src:"me03.jpg", v:true},
+  {src:"me04.jpg", v:true},
+  {src:"me05.jpg", v:true},
+  {src:"me06.jpg", v:true},
+  {src:"me07.jpg", v:true},
+  {src:"me08.jpg", v:true},
+  {src:"me09.jpg", v:true},
+  {src:"decoy01.jpg", v:false},
+  {src:"decoy02.jpg", v:false},
+  {src:"decoy03.jpg", v:false}
+];
+
+const slides = [
+  "slide01.jpg","slide02.jpg","slide03.jpg","slide04.jpg",
+  "slide05.jpg","slide06.jpg","slide07.jpg","slide08.jpg",
+  "slide09.jpg","slide10.jpg","slide11.jpg","slide12.jpg"
+];
+
+/* -------- CONFETTI -------- */
+const confetti = document.getElementById("confetti");
+
+function burst(n=90){
+  const hearts = ["💖","💘","💕","❤️","💝","💗"];
+  for(let i=0;i<n;i++){
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = hearts[Math.floor(Math.random()*hearts.length)];
+    h.style.left = (Math.random()*100) + "vw";
+    h.style.fontSize = (14 + Math.random()*20) + "px";
+    h.style.animationDuration = (1800 + Math.random()*1200) + "ms";
+    confetti.appendChild(h);
+    setTimeout(()=>h.remove(), 3800);
+  }
+}
+
+/* -------- GAME -------- */
+const grid = document.getElementById("grid");
+const status = document.getElementById("status");
+const cont = document.getElementById("continueBtn");
+const reset = document.getElementById("resetBtn");
+const toast = document.getElementById("toast");
+
+const gameCard = document.getElementById("gameCard");
+const slideshowCard = document.getElementById("slideshowCard");
+
+let selected = new Set();
+let solvedOnce = false;
+
+function shuffle(a){
+  // Fisher-Yates
+  const arr = a.slice();
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+let shuffled = shuffle(tiles);
+
+function msg(t){
+  toast.textContent = t;
+  toast.classList.add("show");
+  clearTimeout(msg._t);
+  msg._t = setTimeout(()=>toast.classList.remove("show"), 2200);
+}
+
+function render(){
+  grid.innerHTML="";
+  selected.clear();
+  solvedOnce = false;
+  cont.disabled = true;
+
+  shuffled = shuffle(tiles);
+
+  shuffled.forEach((t,i)=>{
+    const d = document.createElement("div");
+    d.className="tile";
+    d.setAttribute("role","button");
+    d.setAttribute("tabindex","0");
+
+    const img = document.createElement("img");
+    img.src = t.src;
+    img.alt = "choice image";
+
+    d.appendChild(img);
+
+    d.addEventListener("click", ()=>toggle(i,d));
+    d.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter" || e.key===" ") toggle(i,d);
+    });
+
+    grid.appendChild(d);
+  });
+
+  update();
+  msg("Okay… find your valentine 😌");
+}
+
+function toggle(i,el){
+  if(selected.has(i)){
+    selected.delete(i);
+    el.classList.remove("selected");
+  }else{
+    selected.add(i);
+    el.classList.add("selected");
+  }
+
+  if(!shuffled[i].v && selected.has(i)){
+    msg("That’s not me 😅");
+  }
+  update();
+}
+
+function solvedCheck(){
+  for(let i=0;i<shuffled.length;i++){
+    if(shuffled[i].v && !selected.has(i)) return false;
+    if(!shuffled[i].v && selected.has(i)) return false;
+  }
+  return true;
+}
+
+function update(){
+  status.textContent = selected.size + " selected";
+
+  const ok = solvedCheck();
+  cont.disabled = !ok;
+
+  if(ok && !solvedOnce){
+    solvedOnce = true;
+    msg("You found me 😏");
+    burst(110);
+  }
+  if(!ok) solvedOnce = false;
+}
+
+reset.addEventListener("click", render);
+
+cont.addEventListener("click", ()=>{
+  burst(130);
+
+  gameCard.classList.add("hidden");
+  slideshowCard.classList.remove("hidden");
+
+  initShow();
+  play();
+
+  // Fade-in Spotify once slideshow starts
+  setTimeout(()=>{
+    const s = document.getElementById("spotifyPlayer");
+    if(s) s.classList.add("show");
+  }, 1200);
+});
+
+/* -------- SLIDESHOW -------- */
+let idx = 0;
+let timer = null;
+let playing = true;
+
+const imgs = Array.from({length:12}, (_,i)=>document.getElementById("slide"+i));
+const dots = document.getElementById("dots");
+const counter = document.getElementById("counter");
+const playBtn = document.getElementById("playPauseBtn");
+const speed = document.getElementById("speed");
+
+function initShow(){
+  imgs.forEach((el,i)=>{ el.src = slides[i]; });
+
+  dots.innerHTML = "";
+  slides.forEach((_,i)=>{
+    const d = document.createElement("div");
+    d.className = "dot";
+    d.title = `Slide ${i+1}`;
+    d.addEventListener("click", ()=>{
+      idx = i;
+      draw();
+      resetAuto();
+    });
+    dots.appendChild(d);
+  });
+
+  idx = 0;
+  draw();
+
+  playing = true;
+  playBtn.textContent = "Pause";
+}
+
+function draw(){
+  imgs.forEach((el,i)=>el.classList.toggle("active", i===idx));
+  [...dots.children].forEach((d,i)=>d.classList.toggle("active", i===idx));
+  counter.textContent = `Slide ${idx+1} of ${slides.length}`;
+}
+
+function next(){
+  idx = (idx+1) % slides.length;
+  draw();
+}
+
+function prev(){
+  idx = (idx-1+slides.length) % slides.length;
+  draw();
+}
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  next(); resetAuto();
+});
+document.getElementById("prevBtn").addEventListener("click", ()=>{
+  prev(); resetAuto();
+});
+
+function play(){
+  stop();
+  timer = setInterval(next, Number(speed.value));
+  playing = true;
+  playBtn.textContent = "Pause";
+}
+
+function stop(){
+  if(timer) clearInterval(timer);
+  timer = null;
+}
+
+function resetAuto(){
+  if(playing) play();
+}
+
+playBtn.addEventListener("click", ()=>{
+  if(playing){
+    stop();
+    playing = false;
+    playBtn.textContent = "Play";
+    msg("Paused 😌");
+  }else{
+    play();
+    msg("Playing 💞");
+  }
+});
+
+speed.addEventListener("change", ()=>{
+  if(playing) play();
+  msg("Speed updated ⚡");
+});
+
+// Keyboard support on slideshow
+document.addEventListener("keydown", (e)=>{
+  if(slideshowCard.classList.contains("hidden")) return;
+  if(e.key==="ArrowLeft"){ prev(); resetAuto(); }
+  if(e.key==="ArrowRight"){ next(); resetAuto(); }
+  if(e.key===" "){ playBtn.click(); }
+});
+
+/* -------- START -------- */
+render();
+</script>
+
+</body>
+</html>
